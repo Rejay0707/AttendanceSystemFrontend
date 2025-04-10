@@ -1,26 +1,30 @@
 import React, { useEffect, useState } from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import {
+    Paper, Table, TableBody, TableCell, TableContainer,
+    TableHead, TableRow, TextField
+} from '@mui/material';
 import SnackbarAlert from '../component/SnackbarAlert.js';
 
 const AttendanceContainer = () => {
     const [students, setStudents] = useState([]);
+    const [selectedDate, setSelectedDate] = useState(() => {
+        const today = new Date().toISOString().split('T')[0];
+        return today;
+    });
     const [message, setMessage] = useState('');
     const [open, setOpen] = useState(false);
 
     useEffect(() => {
-        fetchStudents();
-    }, []);
+        fetchStudents(selectedDate);
+    }, [selectedDate]);
 
-    const fetchStudents = async () => {
+    const fetchStudents = async (date) => {
         try {
-            const response = await fetch('http://localhost:5000/api/students');
+            const response = await fetch(`http://localhost:5000/api/students?date=${date}`);
             const data = await response.json();
-            console.log('Fetched students:', data); // Debugging log
 
             if (response.ok) {
                 const currentHour = new Date().getHours();
-
-                // Process students' data to format date and update attendance dynamically
                 const updatedStudents = data.map(student => {
                     const captureDate = new Date(student.capture_date_time);
                     const formattedDate = captureDate.toLocaleDateString();
@@ -29,8 +33,8 @@ const AttendanceContainer = () => {
                         ...student,
                         formattedDate,
                         morning_present: student.morning_present ? 'Present' : 'Absent',
-                        afternoon_present: currentHour < 12 
-                            ? 'Yet to register' 
+                        afternoon_present: currentHour < 12
+                            ? 'Yet to register'
                             : student.afternoon_present ? 'Present' : 'Absent',
                     };
                 });
@@ -58,6 +62,19 @@ const AttendanceContainer = () => {
         <>
             <Paper elevation={3} style={{ padding: '20px' }}>
                 <h5>Registered Students</h5>
+
+                {/* 🔍 Date Picker */}
+                <TextField
+                    label="Select Date"
+                    type="date"
+                    variant="outlined"
+                    fullWidth
+                    margin="normal"
+                    InputLabelProps={{ shrink: true }}
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                />
+
                 <TableContainer>
                     <Table>
                         <TableHead>
@@ -74,7 +91,7 @@ const AttendanceContainer = () => {
                                 <TableRow key={student.id}>
                                     <TableCell>{student.name}</TableCell>
                                     <TableCell>{student.roll_no}</TableCell>
-                                    <TableCell>{student.formattedDate || 'N/A'}</TableCell> 
+                                    <TableCell>{student.formattedDate || 'N/A'}</TableCell>
                                     <TableCell>{student.morning_present}</TableCell>
                                     <TableCell>{student.afternoon_present}</TableCell>
                                 </TableRow>
@@ -89,3 +106,5 @@ const AttendanceContainer = () => {
 };
 
 export default AttendanceContainer;
+
+
