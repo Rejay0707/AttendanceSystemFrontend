@@ -25,17 +25,24 @@ const AttendanceContainer = () => {
 
             if (response.ok) {
                 const currentHour = new Date().getHours();
+                const todayDate = new Date().toISOString().split('T')[0];
+
                 const updatedStudents = data.map(student => {
-                    const captureDate = new Date(student.capture_date_time);
-                    const formattedDate = captureDate.toLocaleDateString();
+                    const studentDate = new Date(student.capture_date_time).toISOString().split('T')[0];
+                    const isToday = studentDate === todayDate;
+
+                    const afternoonStatus = isToday && currentHour < 12
+                        ? 'Yet to register'
+                        : student.afternoon_present === null
+                            ? 'Yet to register'
+                            : student.afternoon_present
+                                ? 'Present'
+                                : 'Absent';
 
                     return {
                         ...student,
-                        formattedDate,
                         morning_present: student.morning_present ? 'Present' : 'Absent',
-                        afternoon_present: currentHour < 12
-                            ? 'Yet to register'
-                            : student.afternoon_present ? 'Present' : 'Absent',
+                        afternoon_present: afternoonStatus,
                     };
                 });
 
@@ -52,29 +59,19 @@ const AttendanceContainer = () => {
     };
 
     const handleClose = (event, reason) => {
-        if (reason === 'clickaway') {
-            return;
-        }
+        if (reason === 'clickaway') return;
         setOpen(false);
     };
 
     return (
         <>
-            <Paper elevation={3} style={{ padding: '20px' }}>
-                <h5>Registered Students</h5>
-
-                {/* 🔍 Date Picker */}
+            <Paper elevation={3} sx={{ padding: 2 }}>
                 <TextField
-                    label="Select Date"
                     type="date"
-                    variant="outlined"
-                    fullWidth
-                    margin="normal"
-                    InputLabelProps={{ shrink: true }}
                     value={selectedDate}
                     onChange={(e) => setSelectedDate(e.target.value)}
+                    InputLabelProps={{ shrink: true }}
                 />
-
                 <TableContainer>
                     <Table>
                         <TableHead>
@@ -82,17 +79,21 @@ const AttendanceContainer = () => {
                                 <TableCell>Name</TableCell>
                                 <TableCell>Roll No</TableCell>
                                 <TableCell>Date</TableCell>
-                                <TableCell>Morning Session</TableCell>
-                                <TableCell>Afternoon Session</TableCell>
+                                <TableCell>Session</TableCell>
+                                <TableCell>Status</TableCell>
+                                <TableCell>Session</TableCell>
+                                <TableCell>Status</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {students.map((student) => (
-                                <TableRow key={student.id}>
+                            {students.map((student, index) => (
+                                <TableRow key={index}>
                                     <TableCell>{student.name}</TableCell>
                                     <TableCell>{student.roll_no}</TableCell>
-                                    <TableCell>{student.formattedDate || 'N/A'}</TableCell>
+                                    <TableCell>{new Date(student.capture_date_time).toLocaleDateString()}</TableCell>
+                                    <TableCell>Morning</TableCell>
                                     <TableCell>{student.morning_present}</TableCell>
+                                    <TableCell>Afternoon</TableCell>
                                     <TableCell>{student.afternoon_present}</TableCell>
                                 </TableRow>
                             ))}
@@ -100,11 +101,12 @@ const AttendanceContainer = () => {
                     </Table>
                 </TableContainer>
             </Paper>
-            <SnackbarAlert open={open} handleClose={handleClose} message={message} severity="error" />
+            <SnackbarAlert open={open} message={message} handleClose={handleClose} />
+
+            
+
         </>
     );
 };
 
 export default AttendanceContainer;
-
-
