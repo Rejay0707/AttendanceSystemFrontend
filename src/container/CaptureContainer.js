@@ -18,18 +18,30 @@ const CaptureContainer = () => {
         return new Blob([byteArray], { type });
     };
 
-    const handleCapture = (imageSrc, name, rollNo) => {
-        const imageBlob = base64ToBlob(imageSrc);
-        setImage(imageSrc);
-        sendImageToServer(imageBlob, name, rollNo);
-    };
+    // const handleCapture = (imageSrc, name, rollNo) => {
+    //     const imageBlob = base64ToBlob(imageSrc);
+    //     setImage(imageSrc);
+    //     sendImageToServer(imageBlob, name, rollNo);
+    // };
 
-    const sendImageToServer = async (imageBlob, name, rollNo) => {
-        const formData = new FormData();
-        formData.append('face', imageBlob, 'face.jpg');
-        formData.append('name', name);
-        formData.append('roll_no', rollNo);
+    const handleCapture = (imageSrc, name, rollNo, phoneNumber) => {
+    const imageBlob = base64ToBlob(imageSrc);
+    setImage(imageSrc);
+    sendImageToServer(imageBlob, name, rollNo, phoneNumber);
+};
 
+    // const sendImageToServer = async (imageBlob, name, rollNo) => {
+    //     const formData = new FormData();
+    //     formData.append('face', imageBlob, 'face.jpg');
+    //     formData.append('name', name);
+    //     formData.append('roll_no', rollNo);
+    const sendImageToServer = async (imageBlob, name, rollNo, grade, phoneNumber) => {
+    const formData = new FormData();
+    formData.append('face', imageBlob, 'face.jpg');
+    formData.append('name', name);
+    formData.append('roll_no', rollNo);
+    formData.append('grade', grade);
+    formData.append('phone_number', phoneNumber);
         try {
             const response = await fetch('http://localhost:5000/api/students/register', {
                 method: 'POST',
